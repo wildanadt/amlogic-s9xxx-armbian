@@ -146,6 +146,7 @@ on:
           - 5.10.1
           - 5.15.1
           - 6.1.1
+          - 5.4.242
       auto_kernel:
         description: "Auto use the latest kernel."
         required: false
