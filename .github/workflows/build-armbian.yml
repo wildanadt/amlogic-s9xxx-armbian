@@ -137,7 +137,7 @@ on:
       armbian_kernel:
         description: "Select kernel version."
         required: false
-        default: "5.4.1"
+        default: "5.4.242"
         type: choice
         options:
           - 5.4.1_5.10.1
