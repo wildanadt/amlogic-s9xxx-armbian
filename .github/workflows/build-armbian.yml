@@ -178,7 +178,7 @@ on:
           - temp
 
 env:
-  TZ: Indonesia/Jakarta
+  TZ: Asia/Jakarta
 
 jobs:
   build:
