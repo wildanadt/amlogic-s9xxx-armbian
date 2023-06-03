@@ -12,7 +12,7 @@ on:
       set_release:
         description: "Select OS Release."
         required: false
-        default: "jammy"
+        default: "bullseye"
         type: choice
         options:
           - jammy
@@ -30,7 +30,7 @@ on:
       armbian_board:
         description: "Select device board."
         required: false
-        default: "all"
+        default: "s905x2"
         type: choice
         options:
           - all
@@ -137,7 +137,7 @@ on:
       armbian_kernel:
         description: "Select kernel version."
         required: false
-        default: "5.15.1_6.1.1"
+        default: "5.4.1"
         type: choice
         options:
           - 5.4.1_5.10.1
@@ -149,7 +149,7 @@ on:
       auto_kernel:
         description: "Auto use the latest kernel."
         required: false
-        default: true
+        default: false
         type: boolean
       kernel_repo:
         description: "Set the kernel repository."
@@ -161,7 +161,7 @@ on:
       kernel_usage:
         description: "Set the tags of the stable kernel."
         required: false
-        default: "stable"
+        default: "flippy"
         type: choice
         options:
           - stable
@@ -178,7 +178,7 @@ on:
           - temp
 
 env:
-  TZ: America/New_York
+  TZ: Indonesia/Jakarta
 
 jobs:
   build:
