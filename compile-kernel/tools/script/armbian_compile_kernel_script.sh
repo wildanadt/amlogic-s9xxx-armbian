@@ -207,7 +207,8 @@ toolchain_check() {
     if [[ "${toolchain_name}" == "clang" ]]; then
         # Install LLVM
         echo -e "${INFO} Start installing the LLVM toolchain..."
-        curl -fsSL https://apt.llvm.org/llvm.sh | bash -s all
+        sudo apt-get -qq install -y lsb-release software-properties-common gnupg
+        curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s all
         [[ "${?}" -eq "0" ]] || error_msg "LLVM installation failed."
 
         # Set cross compilation parameters
@@ -327,7 +328,7 @@ get_kernel_source() {
         local_makefile_sublevel="$(cat ${local_makefile} | grep -oE "SUBLEVEL =.*" | head -n 1 | grep -oE '[0-9]{1,3}')"
 
         # Local version and server version comparison
-        if [[ "${auto_kernel}" == "true" && "${kernel_sub}" -gt "${local_makefile_sublevel}" ]]; then
+        if [[ "${auto_kernel}" == "true" || "${auto_kernel}" == "yes" ]] && [[ "${kernel_sub}" -gt "${local_makefile_sublevel}" ]]; then
             # Pull the latest source code of the server
             cd ${kernel_path}/${local_kernel_path}
             git checkout ${code_branch} && git reset --hard origin/${code_branch} && git pull
@@ -342,8 +343,11 @@ get_kernel_source() {
         fi
     fi
 
+    # Remove the local version number
+    rm -f ${kernel_path}/${local_kernel_path}/localversion
+
     # Apply custom kernel patches
-    [[ "${auto_patch}" == "true" ]] && apply_patch
+    [[ "${auto_patch}" == "true" || "${auto_patch}" == "yes" ]] && apply_patch
 }
 
 headers_install() {
@@ -541,7 +545,10 @@ packit_dtbs() {
     cd ${out_kernel}/dtb/allwinner
     cp -f ${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/allwinner/*.dtb . 2>/dev/null
     [[ "${?}" -eq "0" ]] && {
-        chmod +x *
+        [[ -d "${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/allwinner/overlay" ]] && {
+            mkdir -p overlay
+            cp -f ${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/allwinner/overlay/*.dtbo overlay/ 2>/dev/null
+        }
         tar -czf dtb-allwinner-${kernel_outname}.tar.gz *
         mv -f *.tar.gz ${out_kernel}/${kernel_version}
         echo -e "${SUCCESS} The [ dtb-allwinner-${kernel_outname}.tar.gz ] file is packaged."
@@ -550,7 +557,10 @@ packit_dtbs() {
     cd ${out_kernel}/dtb/amlogic
     cp -f ${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/amlogic/*.dtb . 2>/dev/null
     [[ "${?}" -eq "0" ]] && {
-        chmod +x *
+        [[ -d "${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/amlogic/overlay" ]] && {
+            mkdir -p overlay
+            cp -f ${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/amlogic/overlay/*.dtbo overlay/ 2>/dev/null
+        }
         tar -czf dtb-amlogic-${kernel_outname}.tar.gz *
         mv -f *.tar.gz ${out_kernel}/${kernel_version}
         echo -e "${SUCCESS} The [ dtb-amlogic-${kernel_outname}.tar.gz ] file is packaged."
@@ -559,7 +569,10 @@ packit_dtbs() {
     cd ${out_kernel}/dtb/rockchip
     cp -f ${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/rockchip/*.dtb . 2>/dev/null
     [[ "${?}" -eq "0" ]] && {
-        chmod +x *
+        [[ -d "${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/rockchip/overlay" ]] && {
+            mkdir -p overlay
+            cp -f ${kernel_path}/${local_kernel_path}/arch/arm64/boot/dts/rockchip/overlay/*.dtbo overlay/ 2>/dev/null
+        }
         tar -czf dtb-rockchip-${kernel_outname}.tar.gz *
         mv -f *.tar.gz ${out_kernel}/${kernel_version}
         echo -e "${SUCCESS} The [ dtb-rockchip-${kernel_outname}.tar.gz ] file is packaged."
@@ -664,11 +677,12 @@ init_var "${@}"
 # Check and install the toolchain
 toolchain_check
 # Query the latest kernel version
-[[ "${auto_kernel}" == "true" ]] && query_version
+[[ "${auto_kernel}" == "true" || "${auto_kernel}" == "yes" ]] && query_version
 
 # Show compile settings
 echo -e "${INFO} Kernel compilation toolchain: [ ${toolchain_name} ]"
 echo -e "${INFO} Kernel from: [ ${code_owner} ]"
+echo -e "${INFO} Kernel patch: [ ${auto_patch} ]"
 echo -e "${INFO} Kernel Package: [ ${package_list} ]"
 echo -e "${INFO} kernel signature: [ ${custom_name} ]"
 echo -e "${INFO} Latest kernel version: [ ${auto_kernel} ]"
